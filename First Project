@@ -1,4 +1,4 @@
--- separate folder and a new file for each manager
+-- -------------------------separate folder and a new file for each manager
 
 Sub SaveMe()
 
@@ -33,3 +33,73 @@ MySavedPath = Application.WorksheetFunction.VLookup(MyTm, Range("TMSavePath"), 2
 Application.ScreenUpdating = True
 
 End Sub
+--------------------------------------------------------------------
+
+------ Extract values not found in the second list from the first list
+
+
+Option Base 1   'Ensure Arrays begin at 1
+
+
+Sub Test()
+'Loading all the array at once
+
+Dim Array1234() As Variant    'Declare the array
+Dim RC As Integer     'Get the count of the rows of data
+Dim x As Integer    'Loop to write data
+
+    'Turn off screen updating (MUST be turned back on at the end)
+    Application.ScreenUpdating = False
+    'Turn off automatic calculation (MUST be turned back on at the end)
+    Application.Calculation = xlCalculationManual
+    
+    'Clear old written data
+    Range("D:E").ClearContents
+    
+    'Add start time (just for clocking the speed)
+    Range("G1").Value = Time()
+
+
+'Read the data
+    'Load the array
+    Array1234 = Range("A1").CurrentRegion
+    
+    'Get the count of rows in the array
+    RC = UBound(Array1234)
+
+'Write the data
+    'Selet start of "write" range
+    Range("D1").Select
+    
+    On Error Resume Next
+        For x = 1 To RC
+            If IsError _
+                (WorksheetFunction.Match _
+                (MyArray(x, 1), Range("MyNamedRange"), 0)) Then
+                ActiveCell.Value = Array1234(x, 1)
+                ActiveCell.Offset(0, 1).Value = Array1234(x, 2)
+                ActiveCell.Offset(1, 0).Select
+            Else
+                'Do nothing
+            End If
+        Next x
+    On Error GoTo 0
+
+
+    'Add stop time
+    Range("G2").Value = Time()
+    
+    'Turn autocalculate back on
+    Application.Calculation = xlCalculationAutomatic
+    
+    'Turn screen updating back on
+    Application.ScreenUpdating = False
+
+End Sub
+
+
+---------------------------------------------------------------------------------
+
+
+
+
