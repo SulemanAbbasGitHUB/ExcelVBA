@@ -214,3 +214,234 @@ End Sub
 
 
 
+------------------------------------------------------------------
+
+-- Extracting a list and then renaming each sheet based on extracted list and then extracting data
+
+Sub Macro1()
+
+Dim K As Integer        'Holds Count of rows
+Dim L As Integer        'Holds the count of copied cells
+Dim MyLimit As Integer  'Holds the count of matches
+Dim MyTemp As String    'Holds the MPAN #
+Dim MyNewBook As String 'Holds the name of the new workbook
+
+Application.ScreenUpdating = False
+
+    'Ensure we're on the data sheet
+    Sheets("Sheet1").Select
+    
+    'Get the count of the rows in the current region
+    K = Range("A1").CurrentRegion.Rows.Count
+
+
+    'Add a new "Scratch" Sheet after first sheet
+    Sheets.Add After:=Sheets(1)
+    'Rename newly added sheet
+    ActiveSheet.Name = "Scratch"
+    
+    'Copy all of column A of the first sheet to scratch
+    Sheets(1).Range("A1:A" & K).Copy Sheets("Scratch").Range("A1")
+    
+    'Copy all of column B of the first sheet to scratch
+    Sheets(1).Range("B1:B" & K).Copy Sheets("Scratch").Range("A1048575").End(xlUp).Offset(1, 0)
+    
+    
+    
+    'Copy all of column C of the first sheet to scratch
+    Sheets(1).Range("C1:C" & K).Copy Sheets("Scratch").Range("A1048575").End(xlUp).Offset(1, 0)
+    
+  
+    'Remove all duplicates
+    ActiveSheet.Range("$A:$A").RemoveDuplicates Columns:=1, Header:= _
+        xlYes
+    
+    'Select start of range
+    Range("A1").Select
+    
+    'Loop to test for len of 13 characters
+    Do While ActiveCell.Value <> ""
+        'Logical test (is this cell 13 characters long)
+        If Len(ActiveCell.Value) <> 13 Then
+            'Delete the whole row
+            ActiveCell.EntireRow.Delete
+        Else
+            'Move down a cell
+            ActiveCell.Offset(1, 0).Select
+        End If
+    Loop
+    
+    'Add CountIf formulas to column B (checking A,B & C)
+    Range("B1:B" & Range("A1048575").End(xlUp).Row) _
+        .Formula = "=COUNTIF(Sheet1!C[-1]:C[1],Scratch!RC[-1])"
+    
+    
+    
+    
+     
+    'Add a new workbook
+    Workbooks.Add
+    'Get the name of the new workbook
+    MyNewBook = ActiveWorkbook.Name
+    
+    'Go back to this workbook
+    ThisWorkbook.Activate
+    
+    'Select start of range
+    Range("A1").Select
+    
+    'Loop to add sheets (one for each MPAN)
+    Do While ActiveCell.Value <> ""
+        'Get MPAN #
+        MyTemp = ActiveCell.Value
+        'Add new sheet to "MyNewBook"
+        Workbooks(MyNewBook).Sheets.Add _
+            After:=Workbooks(MyNewBook).Sheets(Workbooks(MyNewBook).Sheets.Count)
+        'Rename newly added sheet to MPAN #
+        Workbooks(MyNewBook).Sheets(Workbooks(MyNewBook).Sheets.Count).Name = MyTemp
+        'Move down a cell
+        ActiveCell.Offset(1, 0).Select
+    Loop
+    
+    'Select start of range
+    Range("A1").Select
+    
+    
+    
+
+    
+    'The outer copy and paste loop
+    Do While ActiveCell.Value <> ""
+
+        'Select start of range
+        Range("A1").Select
+        
+        'Get the first value we're looking for
+        MyTemp = ActiveCell.Value
+        'Get the actual count of matches
+        MyLimit = ActiveCell.Offset(0, 1).Value
+        
+        
+        'Go to the data sheet
+        Sheets("Sheet1").Select
+    
+    
+    
+        'The A loop
+        'Select start of range
+        Range("A1").Select
+        
+            Do While ActiveCell.Value <> ""
+                If ActiveCell.Value <> MyTemp Then
+                    'Move down a cell
+                    ActiveCell.Offset(1, 0).Select
+                Else
+                    'Copy the entire row to thye appropriate sheet in the new Workbook
+                    ActiveCell.EntireRow.Copy _
+                        Workbooks(MyNewBook).Sheets(MyTemp).Range("A1048575").End(xlUp).Offset(1, 0)
+                    
+                    'Move down a cell
+                    ActiveCell.Offset(1, 0).Select
+                    
+                    'Increase Y by 1
+                    L = L + 1
+                    
+                    'If we have all the matches, add headings and go to NextOuterLoop
+                    If L = MyLimit Then
+                        Range("A1").EntireRow.Copy Workbooks(MyNewBook).Sheets(MyTemp).Range("A1")
+                        GoTo NextOuterLoop
+                    End If
+                End If
+            Loop
+   
+   
+   
+        'The B loop
+        'Select start of range
+        Range("B1").Select
+        
+            Do While ActiveCell.Value <> ""
+                If ActiveCell.Value <> MyTemp Then
+                    'Move down a cell
+                    ActiveCell.Offset(1, 0).Select
+                Else
+                    'Copy the entire row to thye appropriate sheet in the new Workbook
+                    ActiveCell.EntireRow.Copy _
+                        Workbooks(MyNewBook).Sheets(MyTemp).Range("A1048575").End(xlUp).Offset(1, 0)
+                    
+                    'Move down a cell
+                    ActiveCell.Offset(1, 0).Select
+                    
+                    'Increase Y by 1
+                    L = L + 1
+                    
+                    'If we have all the matches, add headings and go to NextOuterLoop
+                    If L = MyLimit Then
+                        Range("A1").EntireRow.Copy Workbooks(MyNewBook).Sheets(MyTemp).Range("A1")
+                        GoTo NextOuterLoop
+                    End If
+                End If
+            Loop
+   
+   
+   
+   
+        'The C loop
+        'Select start of range
+        Range("C1").Select
+        
+            Do While ActiveCell.Value <> ""
+                If ActiveCell.Value <> MyTemp Then
+                    'Move down a cell
+                    ActiveCell.Offset(1, 0).Select
+                Else
+                    'Copy the entire row to thye appropriate sheet in the new Workbook
+                    ActiveCell.EntireRow.Copy _
+                        Workbooks(MyNewBook).Sheets(MyTemp).Range("A1048575").End(xlUp).Offset(1, 0)
+                    
+                    'Move down a cell
+                    ActiveCell.Offset(1, 0).Select
+                    
+                    'Increase Y by 1
+                    L = L + 1
+                    
+                    'If we have all the matches, add headings and go to NextOuterLoop
+                    If Y = MyLimit Then
+                        Range("A1").EntireRow.Copy Workbooks(MyNewBook).Sheets(MyTemp).Range("A1")
+                        GoTo NextOuterLoop
+                    End If
+                End If
+            Loop
+   
+ 
+   
+NextOuterLoop:
+    
+        'Reset L
+        L = 0
+        'Go to the scratch sheet
+        Sheets("Scratch").Select
+        'Delete the entire row
+        Range("A1").EntireRow.Delete
+    
+    Loop
+    
+'Turn off display alerts
+Application.DisplayAlerts = False
+'Delete the scratch sheet
+Sheets("Scratch").Delete
+'Turn on display alerts
+Application.DisplayAlerts = True
+
+'Ensure we're back on the data sheet
+Sheets("Sheet1").Select
+'Select start of range
+Range("A1").Select
+
+
+Application.ScreenUpdating = True
+
+End Sub
+
+
+
