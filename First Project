@@ -1,0 +1,35 @@
+-- separate folder and a new file for each manager
+
+Sub SaveMe()
+
+Application.ScreenUpdating = False
+
+Dim MyReqTime As String          'Holds the Territory Manager "Code"
+Dim MySavedPath As Variant   'Holds the path to save the file
+Dim MyRecordedFileName As String    'Holds the file name
+Dim MY As Integer       'Holds the year
+Dim MM As Integer      'Holds the month
+Dim MD As Integer        'Holds the day
+
+MY = Year(Now)
+ MM = Month(Now)
+ MD = Day(Now)
+
+
+MyReqTime = Left(ActiveSheet.Name, 4)
+MySavedPath = Application.WorksheetFunction.VLookup(MyTm, Range("TMSavePath"), 2, False)
+
+
+    ActiveSheet.Copy
+
+    
+    ActiveWorkbook.SaveAs Filename:= _
+     MySavedPath & "\" & MY & MM & MD & "_" & ActiveSheet.Name & ".xlsx"
+    
+    
+    
+    ActiveWindow.Close
+
+Application.ScreenUpdating = True
+
+End Sub
