@@ -99,7 +99,118 @@ End Sub
 
 
 ---------------------------------------------------------------------------------
+-- save cell values as files in folder and then add within each file, separate file wihtin each folder 
 
+
+Sub SavingMultipleSheets()
+
+'Declare the variables
+Dim MyTime As String              'Holds the territory manager
+Dim MySavedPath As String        'Holds the path to save the file to
+Dim Nameofthefile As String        'Holds the save file name (the new file)
+Dim MW As String    'Holds the name of THIS workbook
+Dim X As Integer                'A simple counter
+Dim Replacedfile As String         'What we will look to replace to breat the links
+
+'Test to ensure we're on row 1
+If ActiveCell.Row <> 1 Then
+    MsgBox "Please ensure you select the territory manager from row 1", _
+        vbCritical, "Select from row 1"
+    End
+End If
+
+
+'The first part...creating a new workbook with our first sheet...
+
+'Get the territory manager
+MyTime = ActiveCell.Value
+'Build the file name for the new file
+Nameofthefile = Year(Now) & Month(Now) & Day(Now) & " - " & ActiveCell.Value & ".xlsx"
+'Build the save path based on which TM was selected
+MySavedPath = Application.WorksheetFunction.VLookup(MyTime, Range("TMSavePath"), 2, False) & "\"
+'Get the name of THIS workbook
+MW = ThisWorkbook.Name
+
+'Move down a row to get the first sheet name
+ActiveCell.Offset(1, 0).Select
+
+'Copy that sheet
+Sheets(ActiveCell.Value).Copy
+'...and save it using the path and file name we built above
+ActiveWorkbook.SaveAs Filename:= _
+        MySavedPath & Nameofthefile, FileFormat:= _
+        xlOpenXMLWorkbook, CreateBackup:=False
+
+
+
+'The second part...go back to our master file, and get the remaining sheets...
+
+'Go back to the master sheet...
+Workbooks(MW).Activate
+'...and move down a row to get the next sheet to be copied
+ActiveCell.Offset(1, 0).Select
+
+'Loop with a test to see if we've reached a blank cell
+Do While ActiveCell.Value <> ""
+        '...if not, increase X by 1 (to use as the sheet index number)
+        X = X + 1
+        'Perform the copy and paste it to out new sheet
+        Sheets(ActiveCell.Value).Copy After:=Workbooks(Nameofthefile).Sheets(X)
+        'Return to the master file...
+        Workbooks(MW).Activate
+        '...and move down a row again
+        ActiveCell.Offset(1, 0).Select
+'...continue to loop until we've copied all the sheets in the list
+Loop
+
+
+
+'The third part...go to the new file, and sort out the link issue...
+
+'Go to the new workbook
+Workbooks(Nameofthefile).Activate
+
+'Build string to search for (the master file name wrapped in square brackets)
+MyReplace = "[" & MW & "]"
+
+'Loop through each sheet in the new workbook
+For X = 1 To Sheets.Count
+    
+    'Select the sheet by its index number...
+    Sheets(X).Select
+    '...select all the cells
+    Cells.Select
+    
+    'Replace our search string with blank...
+    Selection.Replace What:=MyReplace, Replacement:="", LookAt:= _
+        xlPart, SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+        ReplaceFormat:=False
+    'Go to A1 (just to be tidy)
+    Range("A1").Select
+'Repeat loop
+Next X
+
+
+
+'The final part...go to the first sheet, then save and close
+
+'Go to first sheet
+Sheets(1).Select
+
+'Turn off alerts (to avoid being asked if we want to save the file)
+Application.DisplayAlerts = False
+    
+'Save the file
+ActiveWorkbook.SaveAs Filename:= _
+        MySavedPath & Nameofthefile, FileFormat:= _
+        xlOpenXMLWorkbook, CreateBackup:=False
+'Close the file
+ActiveWindow.Close
+
+'Turn the alerts back on
+Application.DisplayAlerts = True
+
+End Sub
 
 
 
